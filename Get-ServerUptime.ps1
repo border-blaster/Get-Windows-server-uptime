@@ -1,6 +1,6 @@
 ### Get-ServerUptime
 ### github.com/border-blaster
-### v2019-01-27
+### v2019-01-29
 
 
 ## Input
@@ -8,7 +8,6 @@ $getcompies=$args[0]
 
 if ($getcompies -eq $null) {
     #No input came in, grabbing all of the comptuers with an OS that looks like a server
-    #Consider using -searchbase here to limit which servers you are checking. 
     $compies = Get-ADComputer -Properties * -Filter 'OperatingSystem -like "*server*"'
     }
     Else {
@@ -21,9 +20,12 @@ Write-Host $compies.count
 
 $ONCompies = @()
 $OFFCompies = @("name")
+$Progress = 0
 
 foreach ($comp in $compies) {
-    
+    Write-Progress -Activity "Checking servers" -percentComplete ($Progress / $compies.count*100)
+    $Progress++
+
     # Before checking the uptime, check that it is even on - with a ping.
     if (Test-Connection $comp.name -Quiet) {
         
@@ -32,6 +34,7 @@ foreach ($comp in $compies) {
 
         $ONCompies += @([PSCustomObject]@{Name = $comp.Name;  LastBoot = $LastBoot; RunnnigUptime = $RunningUptime})
 
+    
     } Else {$offcompies+=$comp}
  }
 
